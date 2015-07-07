@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+set -e
+
+# Abort the script with an error message
+abort() {
+  echo $1 >&2
+  exit 1
+}
+
+# Extract some info from rustc
+rustc_info() {
+  rustc -Vv | grep $1 | awk '{print $2}'
+}
+
+is_lib() {
+  grep -q '\[lib\]' Cargo.toml || [ -e src/lib.rs ]
+}
+
+# Check that the rustc command exists
+command -v rustc > /dev/null || abort "rustc cannot be found on path"
+
+# Ensure that $ARCH has been specified
+[ -z $ARCH ] && abort 'no $ARCH specified'
+
+SOURCE_HOST=$(rustc_info "host")
+SOURCE_ARCH=$(echo $SOURCE_HOST | cut -d - -f 1)
+SOURCE_OS=$(echo $SOURCE_HOST | cut -d - -f 2-)
+TARGET_HOST=$ARCH-$SOURCE_OS
+RUSTC_ROOT=$(rustc --print sysroot)
+RUSTC_LIB="$RUSTC_ROOT/lib/rustlib"
+RUSTC_DATE=$(rustc_info "commit-date")
+BCK_FILE="Cargo.toml.cross-compile-bck"
+
+[ $ARCH != $SOURCE_ARCH ] && {
+  # Ensure supported arch
+  [[ "i686 x86_64" =~ $ARCH ]] || abort "unsuported ARCH $ARCH"
+
+  # Make sure that the target arch's lib is present
+  [ -d "$RUSTC_LIB/$TARGET_HOST" ] || {
+    RELEASE=$(rustc_info "release")
+
+    if echo $RELEASE | grep -q beta; then
+      VERSION="beta"
+    elif echo $RELEASE | grep -q nightly; then
+      VERSION="nightly"
+    else
+      VERSION=$RELEASE
+    fi
+
+    DIST_URL=https://static.rust-lang.org/dist/rust-$VERSION-$TARGET_HOST.tar.gz
+
+    echo "Installing alternate rust for arch=$ARCH"
+    curl $DIST_URL | tar -zxf - -C $RUSTC_LIB --strip-components=4 rust-$VERSION-$TARGET_HOST/rustc/lib/rustlib/$TARGET_HOST
+  }
+
+  # Cargo does not currently support doc tests when cross compiling nor a way
+  # to disable doc tests via the CLI, so doc tests must be disabled in the
+  # manifest.
+  #
+  # The strategy is pretty hacky. If there is already a lib section, then just
+  # add doctest=false to the section. If there is no lib section, then the
+  # package name needs to be determined and a lib section created.
+  #
+  # See: rust-lang/cargo#1789
+  is_lib && {
+    mv Cargo.toml $BCK_FILE
+
+    if grep -q '\[lib\]' $BCK_FILE; then
+      cat $BCK_FILE |
+        grep -vE 'doctest *=' | # Remove the current doctest value
+        awk '/\[lib\]/ { print; print "doctest=false"; next }1' > Cargo.toml
+    else
+      # First, extract the name of the lib, assume it is the first value
+      LIB_NAME=$(cat $BCK_FILE | grep 'name *=' | head -n 1 | awk -F '"' '{print $2}')
+
+      cp $BCK_FILE Cargo.toml
+      echo "[lib]" >> Cargo.toml
+      echo "name=\"$LIB_NAME\"" >> Cargo.toml
+      echo "doctest=false" >> Cargo.toml
+    fi
+  }
+}
+
+reset_manifest() {
+  if [ -e "$BCK_FILE" ]; then
+    rm -f Cargo.toml
+    mv $BCK_FILE Cargo.toml
+  fi
+}
+
+# Finally run the tests
+cargo test --target $TARGET_HOST || {
+  reset_manifest
+  exit 1
+}
+
+reset_manifest

@@ -1,0 +1,8 @@
+[package]
+
+name        = "matrix"
+description = "Example rust project configured for a matrix build"
+version     = "0.1.0"
+authors     = ["Carl Lerche <me@carllerche.com>"]
+homepage    = "https://github.com/carllerche/travis-rust-matrix"
+license     = "MIT"
