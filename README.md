@@ -3,6 +3,8 @@
 This repo is an example of how to setup a Rust project to run a matrix
 CI build on travis.
 
+[![Build Status](https://travis-ci.org/carllerche/travis-rust-matrix.svg?branch=master)](https://travis-ci.org/carllerche/travis-rust-matrix)
+
 ## Rationale
 
 It's a good idea to run tests on all supported platforms. While Rust
