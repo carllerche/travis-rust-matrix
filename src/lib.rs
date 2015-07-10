@@ -13,6 +13,7 @@ mod test {
     use std::{env, mem};
 
     #[test]
+    #[cfg(not(windows))]
     pub fn test_something() {
         let arch = env::var("ARCH").unwrap();
 
