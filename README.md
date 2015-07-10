@@ -1,9 +1,10 @@
-# 32-bit CI for Rust on Travis
+# 32-bit CI for Rust on Travis & Appveyor
 
 This repo is an example of how to setup a Rust project to run a matrix
-CI build on travis.
+CI build on Travis and Appveyor.
 
 [![Build Status](https://travis-ci.org/carllerche/travis-rust-matrix.svg?branch=master)](https://travis-ci.org/carllerche/travis-rust-matrix)
+[![Windows Build Status](https://ci.appveyor.com/api/projects/status/ask8rd2nquofihix?svg=true)](https://ci.appveyor.com/project/carllerche/travis-rust-matrix)
 
 ## Rationale
 
@@ -11,6 +12,9 @@ It's a good idea to run tests on all supported platforms. While Rust
 supports 32 bit platforms, Travis currently does not. However, it is
 possible to cross compile 32 bit builds. This project shows how to do
 it.
+
+If you want to support Windows, Appveyor provides a Windows CI system. I
+also included how to setup a matrix build on Appveyor.
 
 ## Usage
 
@@ -32,6 +36,24 @@ configured to run 32-bit builds.
 
 The [nix](https://github.com/carllerche/nix-rust) crate also uses this
 strategy.
+
+## Appveyor
+
+Add the following to `appveyor.yml`
+
+```yaml
+install:
+  - ps: Start-FileDownload "https://git.io/vq9LX"; . .\install.ps1
+
+environment:
+  matrix:
+    - RUST_VERSION: 1.1.0
+    - RUST_VERSION: beta
+    - RUST_VERSION: nightly
+```
+
+See the included [appveyor.yml](appveyor.yml) for a fully working
+example.
 
 ## License (MIT)
 
