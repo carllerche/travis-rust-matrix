@@ -25,7 +25,13 @@ script:
   - curl -sSL https://raw.githubusercontent.com/carllerche/travis-rust-matrix/master/test | bash
 ```
 
-[Example](.travis.yml)
+## Examples
+
+This project features a [simple .travis.yml](.travis.yml) file
+configured to run 32-bit builds.
+
+The [nix](https://github.com/carllerche/nix-rust) crate also uses this
+strategy.
 
 ## License (MIT)
 
