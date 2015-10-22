@@ -15,7 +15,7 @@ env:
   - ARCH=i686
 
 script:
-  - curl -sSL https://raw.githubusercontent.com/carllerche/travis-rust-matrix/master/test | bash
+  - curl -sSL https://raw.githubusercontent.com/carllerche/travis-rust-matrix/nightly-fixes/test | bash
 
 addons:
   apt:
