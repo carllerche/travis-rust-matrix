@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -e -x
 
 # Abort the script with an error message
 abort() {
@@ -48,9 +48,25 @@ BCK_FILE="Cargo.toml.cross-compile-bck"
     fi
 
     DIST_URL=https://static.rust-lang.org/dist/rust-$VERSION-$TARGET_HOST.tar.gz
+    RUST_STD=rust-std-$TARGET_HOST
+    LIB_SUBDIR=lib/rustlib/$TARGET_HOST
 
     echo "Installing alternate rust for arch=$ARCH"
-    curl $DIST_URL | tar -zxf - -C $RUSTC_LIB --strip-components=4 rust-$VERSION-$TARGET_HOST/rustc/lib/rustlib/$TARGET_HOST
+
+    # Download
+    curl $DIST_URL | tar -zxf -
+    pushd rust-$VERSION-$TARGET_HOST
+
+    # If the new stdlib directory exists, copy files out of there, otherwise
+    # fallback to the old location
+    if [ -d "$RUST_STD" ]; then
+      # rust-std-i686-unknown-linux-gnu/lib/rustlib/i686-unknown-linux-gnu/lib
+      mv $RUST_STD/$LIB_SUBDIR $RUSTC_LIB/
+    else
+      mv rustc/$LIB_SUBDIR $RUSTC_LIB/
+    fi
+
+    popd
   }
 
   # Cargo does not currently support doc tests when cross compiling nor a way
