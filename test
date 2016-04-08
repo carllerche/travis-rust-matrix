@@ -105,7 +105,7 @@ reset_manifest() {
 }
 
 # Finally run the tests
-cargo test --target $TARGET_HOST || {
+cargo test $CARGOOPTS --target $TARGET_HOST || {
   reset_manifest
   exit 1
 }
