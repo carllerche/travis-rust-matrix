@@ -2,7 +2,7 @@
 /// Returns a quote from the Matrix movie
 ///
 /// ```
-/// println!("{}", matrix::quote());
+/// println!("{}", matrix_test::quote());
 /// ```
 pub fn quote() -> &'static str {
     "There is no spoon."

@@ -88,6 +88,9 @@ BCK_FILE="Cargo.toml.cross-compile-bck"
     else
       # First, extract the name of the lib, assume it is the first value
       LIB_NAME=$(cat $BCK_FILE | grep 'name *=' | head -n 1 | awk -F '"' '{print $2}')
+      # Second, normalize the name by converting dashes to underscores.
+      # This is required by the [lib] directive (see issue #4)
+      LIB_NAME="$(echo "$LIB_NAME" | tr - _)"
 
       cp $BCK_FILE Cargo.toml
       echo "[lib]" >> Cargo.toml
