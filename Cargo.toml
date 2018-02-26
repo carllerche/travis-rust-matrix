@@ -1,6 +1,6 @@
 [package]
 
-name        = "matrix"
+name        = "matrix-test"
 description = "Example rust project configured for a matrix build"
 version     = "0.1.0"
 authors     = ["Carl Lerche <me@carllerche.com>"]
